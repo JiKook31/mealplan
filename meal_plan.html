@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Семейный рацион</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --warm: #F5EDE0;
+    --terracotta: #C4714A;
+    --terracotta-light: #E8927A;
+    --green: #5C7A5E;
+    --green-light: #8CAB8E;
+    --ochre: #D4A843;
+    --text: #2C2416;
+    --text-soft: #6B5B45;
+    --card: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--terracotta);
+    padding: 48px 32px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    color: white;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    color: rgba(255,255,255,0.85);
+    font-size: 1rem;
+    font-weight: 300;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    background: var(--warm);
+    border-bottom: 2px solid #E8DDD0;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .tab {
+    padding: 14px 20px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-soft);
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+
+  .tab:hover { color: var(--terracotta); }
+  .tab.active {
+    color: var(--terracotta);
+    border-bottom-color: var(--terracotta);
+  }
+
+  .content { display: none; padding: 28px 24px; max-width: 900px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--terracotta);
+    margin-bottom: 6px;
+  }
+
+  .section-subtitle {
+    color: var(--text-soft);
+    font-size: 0.92rem;
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(44,36,22,0.07);
+    border-left: 4px solid var(--terracotta);
+  }
+
+  .card.green { border-left-color: var(--green); }
+  .card.ochre { border-left-color: var(--ochre); }
+
+  .card h3 {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .card p, .card li {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    margin-bottom: 4px;
+  }
+
+  .card ul { padding-left: 18px; }
+  .card li { margin-bottom: 2px; }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-right: 6px;
+    margin-bottom: 8px;
+  }
+
+  .tag.red { background: #FDE8E0; color: var(--terracotta); }
+  .tag.green { background: #E4EEE4; color: var(--green); }
+  .tag.yellow { background: #FDF3DC; color: #B8860B; }
+  .tag.blue { background: #E0EDFF; color: #3B6FB5; }
+
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .day-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 2px 10px rgba(44,36,22,0.06);
+  }
+
+  .day-name {
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--terracotta);
+    margin-bottom: 10px;
+  }
+
+  .meal {
+    margin-bottom: 8px;
+  }
+
+  .meal-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .meal-name {
+    font-size: 0.88rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .meal-note {
+    font-size: 0.77rem;
+    color: var(--text-soft);
+    font-weight: 300;
+  }
+
+  .tip-box {
+    background: var(--warm);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .tip-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .tip-box h4 {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+
+  .tip-box p {
+    font-size: 0.87rem;
+    color: var(--text-soft);
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .two-col { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.8rem; }
+    .tabs { padding: 0 12px; }
+    .tab { padding: 12px 14px; font-size: 0.82rem; }
+    .content { padding: 20px 16px; }
+  }
+
+  .recipe-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #F0E8DC;
+  }
+
+  .recipe-row:last-child { border-bottom: none; }
+
+  .recipe-name { font-weight: 600; font-size: 0.92rem; }
+  .recipe-meta { font-size: 0.8rem; color: var(--text-soft); }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #FDE8E0;
+    color: var(--terracotta);
+  }
+
+  .badge.g { background: #E4EEE4; color: var(--green); }
+  .badge.y { background: #FDF3DC; color: #B8860B; }
+
+  .progress-bar {
+    height: 6px;
+    background: #EDE6DC;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--terracotta);
+    transition: width 0.8s ease;
+  }
+
+  .snack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .snack-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(44,36,22,0.06);
+  }
+
+  .snack-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
+  .snack-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+  .snack-desc { font-size: 0.8rem; color: var(--text-soft); }
+
+  .highlight-box {
+    background: linear-gradient(135deg, var(--terracotta), var(--terracotta-light));
+    color: white;
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+
+  .highlight-box h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 8px; }
+  .highlight-box p { font-size: 0.9rem; opacity: 0.9; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍽️ Наш семейный рацион</h1>
+  <p>Вкусно, быстро и без лишних усилий — план для вашей семьи</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview')">📋 Обзор</div>
+  <div class="tab" onclick="showTab('week')">📅 Меню на неделю</div>
+  <div class="tab" onclick="showTab('shopping')">🛒 Закупки</div>
+  <div class="tab" onclick="showTab('recipes')">📖 Рецепты</div>
+  <div class="tab" onclick="showTab('snacks')">🥜 Снеки</div>
+  <div class="tab" onclick="showTab('veggies')">🥦 Овощи и зелень</div>
+  <div class="tab" onclick="showTab('kid')">👶 С сыном</div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="overview" class="content active">
+  <div class="section-title">Ваш план питания</div>
+  <div class="section-subtitle">Система, которая учитывает всех троих, экономит время и уменьшает потери продуктов</div>
+
+  <div class="highlight-box">
+    <h3>Главный принцип: готовим умно, не много</h3>
+    <p>1–2 больших приготовления в неделю + несколько быстрых сборок = разнообразное питание без ежедневного стояния у плиты.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>🧑‍🤝‍🧑 Кто и когда ест</h3>
+      <ul>
+        <li><strong>Будни, завтрак</strong> — вы с мужем</li>
+        <li><strong>Будни, обед</strong> — вы с мужем</li>
+        <li><strong>Будни, ужин</strong> — все втроём</li>
+        <li><strong>Выходные, завтрак</strong> — все вместе</li>
+        <li><strong>Выходные, обед/ужин</strong> — выход в кафе</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>✅ Что уже работает</h3>
+      <ul>
+        <li>Суп с фрикадельками, борщ, лапша</li>
+        <li>Болоньезе, лазанья, пюре с котлетой</li>
+        <li>Плов, шаурма, пицца, Цезарь</li>
+        <li>Гречка с фаршем в мультиварке</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card ochre">
+      <h3>⚡ Быстрые победы</h3>
+      <ul>
+        <li>Новые завтраки (раз в неделю новый)</li>
+        <li>Нарезка овощей сразу в стакан/контейнер</li>
+        <li>Зелень — покупать замороженную</li>
+        <li>2–3 новых снека вместо чипсов</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🎯 Цели на месяц</h3>
+      <ul>
+        <li>Ввести 2–3 рецепта в мультиварке</li>
+        <li>Освоить 4–5 новых завтраков</li>
+        <li>Перестать выбрасывать зелень</li>
+        <li>Найти 3 снека которые нравятся всем</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <div class="tip-icon">💡</div>
+    <div>
+      <h4>Стратегия для разных вкусов</h4>
+      <p>Муж не любит овощи и новое — делаем основу простой и знакомой (мясо + гарнир), а себе добавляем интересные соусы, салаты или гарниры. Это требует минимум усилий и делает всех счастливыми.</p>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK MENU -->
+<div id="week" class="content">
+  <div style="margin-bottom:16px;">
+    <div class="section-title" style="margin-bottom:4px;">Меню на неделю</div>
+    <div class="section-subtitle" style="margin-bottom:0;">Каждое блюдо готовится на 2 приёма — едим сегодня и завтра, но в разное время суток</div>
+  </div>
+
+  <div style="background:white;border-radius:14px;border:1.5px solid #e8e0d0;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(44,36,22,.05);">
+    <label style="display:block;font-size:.72rem;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">💬 Комментарий для генерации (необязательно)</label>
+    <textarea id="week-comment" rows="2" placeholder="Например: в морозилке есть филе курицы и авокадо. Или: на этой неделе хочу что-то азиатское на ужин в пятницу." style="width:100%;padding:10px 12px;border:1.5px solid #e0d5c0;border-radius:8px;font-size:.88rem;font-family:'Nunito',sans-serif;color:var(--text);background:var(--cream);outline:none;resize:vertical;line-height:1.5;"></textarea>
+    <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+      <button id="week-gen-btn" onclick="weekGenerate()" style="display:flex;align-items:center;gap:8px;padding:10px 22px;background:var(--terracotta);color:white;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(196,113,74,.3);transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        🪄 Обновить меню
+      </button>
+    </div>
+  </div>
+
+  <div class="tip-box" style="margin-bottom:20px;">
+    <div class="tip-icon">🔄</div>
+    <div>
+      <h4>Логика «готовим один раз»</h4>
+      <p>Суп или горячее блюдо, приготовленное вечером, идёт на обед следующего дня. Это значит: 3–4 готовки в неделю вместо 10.</p>
+    </div>
+  </div>
+
+  <div id="week-content"><p style="text-align:center;padding:30px;color:var(--text-soft)">Нажми «🪄 Обновить меню» чтобы сгенерировать меню из твоих рецептов</p></div>
+</div>
+
+
+<script>
+// localStorage shim — same async API as window.storage (Claude.ai)
+window.storage = {
+  get: function(key) {
+    return Promise.resolve().then(function() {
+      var val = localStorage.getItem(key);
+      if (val === null) throw new Error('Key not found: ' + key);
+      return { key: key, value: val };
+    });
+  },
+  set: function(key, value) {
+    return Promise.resolve().then(function() {
+      localStorage.setItem(key, value);
+      return { key: key, value: value };
+    });
+  },
+  delete: function(key) {
+    return Promise.resolve().then(function() {
+      localStorage.removeItem(key);
+      return { key: key, deleted: true };
+    });
+  }
+};
+
+var WEEK_KEY = 'week:menu';
+var RECIPES_KEY = 'recipes:all';
+
+function weekSep() {
+  return '<hr style="border:none;border-top:1px dashed #E8DDD0;margin:10px 0">';
+}
+
+function weekMeal(meal, label) {
+  if (!meal) return '';
+  var cook = meal.cook ? '<span style="display:inline-block;background:#FDE8E0;color:#C4714A;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px">🍳 готовим</span>' : '';
+  var forYou = meal.for_you ? '<span style="display:inline-block;background:#E8F4E8;color:#3A6B3C;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px">тебе: ' + meal.for_you + '</span>' : '';
+  var note = meal.note || (meal.leftover_from ? '← остатки ' + meal.leftover_from : '');
+  return '<div class="meal">'
+    + '<div class="meal-label">' + label + '</div>'
+    + '<div class="meal-name">' + meal.name + cook + forYou + '</div>'
+    + (note ? '<div class="meal-note">' + note + '</div>' : '')
+    + '</div>' + weekSep();
+}
+
+function weekDayCard(day) {
+  var isWeekend = day.weekend;
+  var cardStyle = isWeekend ? 'style="background:linear-gradient(135deg,#f9f5ff,#fff)"' : '';
+  var nameStyle = isWeekend ? 'style="color:#5C7A5E"' : '';
+  var friTag = day.friday ? ' <span style="font-size:.75rem;color:#5C7A5E;font-weight:700">✨ твой день</span>' : '';
+  return '<div class="day-card" ' + cardStyle + '>'
+    + '<div class="day-name" ' + nameStyle + '>' + day.name + friTag + '</div>'
+    + weekMeal(day.breakfast, 'Завтрак')
+    + weekMeal(day.lunch, 'Обед')
+    + weekMeal(day.dinner, 'Ужин')
+    + '</div>';
+}
+
+function weekConnector(text) {
+  return '<div style="display:flex;align-items:center;font-size:.78rem;color:#C4714A;font-weight:700;gap:6px;padding:4px 0;margin-bottom:12px">'
+    + '<span style="flex:1;height:1px;background:#E8C4B0;display:block"></span>'
+    + '<span>' + text + '</span>'
+    + '<span style="flex:1;height:1px;background:#E8C4B0;display:block"></span>'
+    + '</div>';
+}
+
+function weekRow(d1, d2) {
+  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    + weekDayCard(d1)
+    + (d2 ? weekDayCard(d2) : '<div></div>')
+    + '</div>';
+}
+
+function weekRenderMenu(menu) {
+  var days = menu.days || [];
+  for (var i = 0; i < days.length; i++) {
+    if (days[i].name === 'Пятница') days[i].friday = true;
+  }
+  var html = '';
+  html += weekRow(days[0], days[1]);
+  html += weekConnector('готовим новое в среду');
+  html += weekRow(days[2], days[3]);
+  html += weekConnector('пятница — день для себя');
+  html += weekRow(days[4], days[5]);
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    + (days[6] ? weekDayCard(days[6]) : '<div></div>');
+  if (menu.next_monday_lunch) {
+    html += '<div class="day-card" style="border:2px dashed #E8DDD0;box-shadow:none;background:#FDFAF7">'
+      + '<div class="day-name" style="color:#6B5B45">Понедельник (след.)</div>'
+      + weekMeal(menu.next_monday_lunch, 'Обед')
+      + '</div>';
+  } else {
+    html += '<div></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+async function weekLoadAndRender() {
+  try {
+    var saved = await window.storage.get(WEEK_KEY);
+    if (saved && saved.value) {
+      document.getElementById('week-content').innerHTML = saved.value;
+    }
+  } catch(e) {}
+}
+
+async function weekGenerate() {
+  var btn = document.getElementById('week-gen-btn');
+  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:wgspin .8s linear infinite;vertical-align:middle;margin-right:6px"></span> Составляю...';
+  btn.disabled = true;
+
+  var userComment = (document.getElementById('week-comment').value || '').trim();
+
+  var recipes = [];
+  try {
+    var r = await window.storage.get(RECIPES_KEY);
+    if (r && r.value) recipes = JSON.parse(r.value);
+  } catch(e) {}
+
+  var recipesList = recipes.length
+    ? recipes.map(function(r) { return '- ' + r.name + ' (' + r.category + ')'; }).join('\n')
+    : '(рецептов пока нет)';
+
+  var commentBlock = userComment
+    ? 'ПОЖЕЛАНИЯ НА ЭТУ НЕДЕЛЮ:\n'
+      + userComment + '\n'
+      + 'Важно: если упомянуты конкретные продукты (например "есть курица" или "есть авокадо") — включи ОДНО блюдо с каждым таким продуктом (не каждое блюдо, а только одно). Продукты необязательно должны быть в одном блюде. Логика переносов (ужин → обед следующего дня) должна сохраняться.\n\n'
+    : '';
+
+  var prompt = 'Составь меню на неделю для семьи (муж, жена, ребёнок 2,5 года).\n\n'
+    + commentBlock
+    + 'СТРУКТУРА ДНЯ (будни):\n'
+    + '- Завтрак: муж и жена\n'
+    + '- Обед: муж и жена\n'
+    + '- Ужин: все трое\n\n'
+    + 'ЛОГИКА ПЕРЕНОСОВ (главное правило):\n'
+    + 'ВАРИАНТ А — если на обед суп:\n'
+    + '  Обед сегодня: суп (готовим, cook:true)\n'
+    + '  Ужин сегодня: горячее блюдо (готовим, cook:true)\n'
+    + '  Обед завтра: тот же суп (leftover_from: день, cook:false)\n'
+    + '  Ужин завтра: то же горячее для мужа, но for_you — с обновлением для жены (другой соус, гарнир, подача)\n\n'
+    + 'ВАРИАНТ Б — если на обед не суп (салат, лёгкое):\n'
+    + '  Ужин сегодня: горячее блюдо (готовим, cook:true)\n'
+    + '  Обед завтра: то же горячее (leftover_from: день, cook:false) с обновлением для жены\n\n'
+    + 'ДРУГИЕ ПРАВИЛА:\n'
+    + '1. Суббота и воскресенье: обед и ужин — кафе (weekend:true)\n'
+    + '2. Ужин воскресенья → next_monday_lunch (с обновлением для жены)\n'
+    + '3. Пятница — интересное новое блюдо для жены на ужин\n'
+    + '4. Блюда не повторяются в течение недели (кроме переноса остатков)\n'
+    + '5. Одно блюдо НЕ появляется в один день дважды\n'
+    + '6. Суп — не более 1 раза в неделю (он переносится на следующий день по варианту А)\n'
+    + '7. Используй рецепты из списка, дополняй стандартными если мало\n'
+    + '8. Муж не ест: болгарский перец, грибы, горох, морепродукты, рыбу\n'
+    + '9. Жена любит азиатское, средиземноморское. Не любит кинзу, сельдерей\n\n'
+    + 'ПРИМЕРЫ ОБНОВЛЕНИЙ ДЛЯ ЖЕНЫ (for_you):\n'
+    + '- Гречка с фаршем → for_you: + греческий салат с фетой\n'
+    + '- Плов → for_you: боул с авокадо и соусом тахини\n'
+    + '- Курица → for_you: с соусом карри или терияки\n'
+    + '- Макароны → for_you: другой формат пасты + соус\n\n'
+    + 'Мои рецепты:\n' + recipesList + '\n\n'
+    + 'Верни ТОЛЬКО валидный JSON без markdown, без пояснений.\n'
+    + 'Формат каждого дня:\n'
+    + '{"name":"Понедельник","weekend":false,'
+    + '"breakfast":{"name":"...","note":""},'
+    + '"lunch":{"name":"...","note":"","leftover_from":"","cook":false},'
+    + '"dinner":{"name":"...","note":"","cook":true,"for_you":""}}\n'
+    + 'Для субботы и воскресенья weekend:true, обед и ужин name="кафе".\n'
+    + 'Оберни в: {"days":[...],"next_monday_lunch":{"name":"...","note":"","for_you":""}}';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    var raw = (data.content || []).map(function(b) { return b.text || ''; }).join('').trim();
+    var jsonStart = raw.indexOf('{');
+    var jsonEnd = raw.lastIndexOf('}');
+    var menu = JSON.parse(raw.substring(jsonStart, jsonEnd + 1));
+    var html = weekRenderMenu(menu);
+    document.getElementById('week-content').innerHTML = html;
+    await window.storage.set(WEEK_KEY, html);
+
+    // Generate shopping list from menu
+    btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:wgspin .8s linear infinite;vertical-align:middle;margin-right:6px"></span> Составляю закупки...';
+    await weekGenerateShopping(menu);
+  } catch(e) {
+    alert('Ошибка генерации: ' + e.message);
+  }
+
+  btn.innerHTML = '🪄 Обновить меню';
+  btn.disabled = false;
+}
+
+// CSS for spinner
+var wgStyle = document.createElement('style');
+wgStyle.textContent = '@keyframes wgspin { to { transform: rotate(360deg); } }';
+document.head.appendChild(wgStyle);
+
+async function weekGenerateShopping(menu) {
+  var SHOP_KEY = 'shopping:generated';
+
+  // Build meal list from menu for the prompt
+  var meals = [];
+  var days = menu.days || [];
+  for (var i = 0; i < days.length; i++) {
+    var d = days[i];
+    if (d.weekend) continue;
+    if (d.breakfast && d.breakfast.name) meals.push(d.breakfast.name);
+    if (d.lunch && d.lunch.name && !d.lunch.leftover_from) meals.push(d.lunch.name);
+    if (d.dinner && d.dinner.name) meals.push(d.dinner.name);
+  }
+  var mealsList = meals.join(', ');
+
+  var prompt = 'Составь список покупок на неделю для этих блюд: ' + mealsList + '\n\n'
+    + 'Сгруппируй по категориям. Используй только реально нужные продукты.\n'
+    + 'Верни ТОЛЬКО валидный JSON без markdown:\n'
+    + '{"categories":[{"name":"🥩 Мясо и белок","items":["..."]},{"name":"🥕 Овощи","items":["..."]},{"name":"🫙 Крупы и макароны","items":["..."]},{"name":"🧀 Молочное","items":["..."]},{"name":"🧴 Соусы и специи","items":["..."]}]}';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    var raw = (data.content || []).map(function(b) { return b.text || ''; }).join('').trim();
+    var jsonStart = raw.indexOf('{');
+    var jsonEnd = raw.lastIndexOf('}');
+    var result = JSON.parse(raw.substring(jsonStart, jsonEnd + 1));
+    await window.storage.set(SHOP_KEY, JSON.stringify(result));
+    window.shopRenderGenerated(result);
+  } catch(e) {
+    console.error('Shopping generation error:', e);
+  }
+}
+
+weekLoadAndRender();
+</script>
+
+
+<!-- SNACKS -->
+<div id="snacks" class="content">
+  <div class="section-title">Новые снеки</div>
+  <div class="section-subtitle">Альтернативы чипсам — вкусные, быстрые, и часть из них делается в аэрогриле</div>
+
+  <div class="snack-grid">
+    <div class="snack-card">
+      <span class="snack-emoji">🧀</span>
+      <div class="snack-name">Сырные чипсы</div>
+      <div class="snack-desc">Натереть сыр, выложить кучками в аэрогриль, 5 минут. Хрустящие и очень вкусные.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🥕</span>
+      <div class="snack-name">Овощи + хумус</div>
+      <div class="snack-desc">Морковь, огурец, сельдерей (если любите) нарезать палочками. Хумус из магазина.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🥜</span>
+      <div class="snack-name">Орехово-фруктовая смесь</div>
+      <div class="snack-desc">Орехи + сухофрукты в баночке. Готово без готовки, сытно.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🍌</span>
+      <div class="snack-name">Банановые чипсы</div>
+      <div class="snack-desc">Банан тонко, в аэрогриль на 15 минут при 120°. Сын в восторге.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🥚</span>
+      <div class="snack-name">Яйца варёные</div>
+      <div class="snack-desc">Сварить сразу 6 штук — быстрый перекус на 3 дня. Можно с солью и паприкой.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🍞</span>
+      <div class="snack-name">Брускетта с помидорами</div>
+      <div class="snack-desc">Хлеб + масло + помидор + базилик. Муж любит помидоры — это его снек.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🍿</span>
+      <div class="snack-name">Попкорн домашний</div>
+      <div class="snack-desc">Кукурузные зёрна в кастрюле с крышкой. Можно с маслом и солью или с сахаром для сына.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🫐</span>
+      <div class="snack-name">Йогурт с ягодами</div>
+      <div class="snack-desc">Греческий йогурт + замороженные ягоды (оттаивают за 10 минут). С мёдом ещё лучше.</div>
+    </div>
+    <div class="snack-card">
+      <span class="snack-emoji">🥓</span>
+      <div class="snack-name">Мясные чипсы/джерки</div>
+      <div class="snack-desc">Тонкие полоски мяса в аэрогриле при 70–80° несколько часов. Заготовка на неделю.</div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <div class="tip-icon">🎯</div>
+    <div>
+      <h4>Лайфхак: снек-зона</h4>
+      <p>Выдели одну полку или корзину в холодильнике — «снеки готовы». Нарезанные овощи, варёные яйца, орехи в баночке. Видишь — берёшь, не думая. Снимает 80% вопроса «что поесть».</p>
+    </div>
+  </div>
+</div>
+
+<!-- VEGGIES -->
+<div id="veggies" class="content">
+  <div class="section-title">Овощи и зелень без потерь</div>
+  <div class="section-subtitle">Как включить их в рацион так, чтобы они не портились и муж не страдал</div>
+
+  <div class="card">
+    <h3>🧊 Решение проблемы с зеленью раз и навсегда</h3>
+    <p>Покупать зелень <strong>замороженную</strong>: укроп, петрушка, базилик — она не портится, удобно отсыпать нужное количество, вкус почти тот же в супах, соусах, мясе. Свежую зелень — только если планируете использовать в тот же день или завтра.</p>
+    <br>
+    <p>Второй вариант: купить <strong>горшочек с зеленью</strong> на подоконник — укроп или петрушка. Срезать по чуть-чуть, не выбрасывать.</p>
+  </div>
+
+  <div class="card green">
+    <h3>🥗 Как вводить овощи незаметно для мужа</h3>
+    <ul>
+      <li><strong>Помидоры</strong> — он любит, делайте чаще: нарезка к ужину, брускетта, в яичницу</li>
+      <li><strong>Кукуруза</strong> — сын любит, муж нейтрален, добавляйте в блюда</li>
+      <li><strong>Морковь и лук тёртые</strong> — в котлеты, болоньезе, суп — не заметит</li>
+      <li><strong>Шпинат замороженный</strong> — в яичницу или омлет, почти без вкуса</li>
+      <li><strong>Огурец</strong> — нейтральный, в нарезку всегда</li>
+    </ul>
+  </div>
+
+  <div class="card ochre">
+    <h3>🧺 Правило закупки овощей</h3>
+    <p>Покупать <strong>меньше и чаще</strong>, а не много и редко. Лучше 2–3 вида овощей на неделю, которые точно используются, чем 8 видов которые гниют. Список-минимум который всегда работает:</p>
+    <br>
+    <ul>
+      <li>Помидоры (любят все)</li>
+      <li>Огурцы (нейтральны, долго лежат)</li>
+      <li>Морковь (долго лежит, в любое блюдо)</li>
+      <li>Замороженный горошек/кукуруза (не портятся)</li>
+      <li>Замороженный шпинат/укроп (не портятся)</li>
+    </ul>
+  </div>
+
+  <div class="tip-box">
+    <div class="tip-icon">🔪</div>
+    <div>
+      <h4>Нарезка сразу после закупки</h4>
+      <p>Купили овощи — сразу нарезать и разложить по контейнерам. Морковь палочками, огурец кружочками, помидоры дольками — и в холодильник. Когда уже нарезано, их едят в 3 раза чаще.</p>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:1.1rem; margin-bottom:12px; margin-top:20px;">🥗 Простые салаты которые нравятся</div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Цезарь быстрый</h3>
+      <p>Листья + курица + соус из магазина + сухарики. Муж любит — готовить хоть каждый день.</p>
+    </div>
+    <div class="card">
+      <h3>Капрезе</h3>
+      <p>Помидоры + моцарелла + базилик + масло. Никакой готовки, 3 минуты, выглядит красиво.</p>
+    </div>
+    <div class="card green">
+      <h3>Огурец + помидор + масло</h3>
+      <p>Классика. Работает всегда, нейтрально для мужа, овощи съедаются.</p>
+    </div>
+    <div class="card green">
+      <h3>Греческий</h3>
+      <p>Огурец + помидор + маслины + фета + масло. Вам понравится, муж может есть без феты.</p>
+    </div>
+  </div>
+</div>
+
+<!-- KID -->
+<div id="kid" class="content">
+  <div class="section-title">Готовим с сыном</div>
+  <div class="section-subtitle">Занятие по возрасту, без стресса и большой уборки</div>
+
+  <div class="tip-box">
+    <div class="tip-icon">👶</div>
+    <div>
+      <h4>Принцип «помогает, не мешает»</h4>
+      <p>В 2,5 года сын может участвовать в простых операциях — мыть, пересыпать, мешать. Это развитие + совместное время + еда которую он сам приготовил (= ест лучше).</p>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:1.1rem; margin-bottom:12px;">🧒 Что может делать сам в 2,5 года</div>
+  <div class="two-col">
+    <div class="card green">
+      <h3>Пересыпать и перемешивать</h3>
+      <ul>
+        <li>Насыпать муку в миску</li>
+        <li>Помешивать тесто ложкой</li>
+        <li>Пересыпать крупу</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>Мыть и выкладывать</h3>
+      <ul>
+        <li>Мыть помидоры/огурцы</li>
+        <li>Выкладывать панкейки на тарелку</li>
+        <li>Раскладывать начинку для пиццы</li>
+      </ul>
+    </div>
+    <div class="card ochre">
+      <h3>Лепить</h3>
+      <ul>
+        <li>Лепить фрикадельки (обожают дети)</li>
+        <li>Раскатывать тесто скалкой</li>
+        <li>Делать ленивые вареники</li>
+      </ul>
+    </div>
+    <div class="card ochre">
+      <h3>Украшать</h3>
+      <ul>
+        <li>Посыпать сыром пиццу</li>
+        <li>Выкладывать ягоды на блины</li>
+        <li>Поливать мёдом запеканку</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:1.1rem; margin-bottom:12px; margin-top:20px;">🍕 Идеальные блюда для совместной готовки</div>
+
+  <div class="card">
+    <h3>Пицца — идеал для детей</h3>
+    <span class="tag blue">Пятница вечер</span>
+    <p>Купить готовое тесто или сделать простое. Раскатать вместе, сын выкладывает начинку — кукурузу, помидоры, сыр. Сам попробует есть то, что сделал. Семейный ритуал.</p>
+  </div>
+  <div class="card">
+    <h3>Фрикадельки для супа</h3>
+    <span class="tag blue">Суббота утром</span>
+    <p>Дать сыну кусок фарша, пусть лепит — пусть неровные, это нормально. Потом в мультиварку. Он будет гордиться тем, что лепил сам.</p>
+  </div>
+  <div class="card">
+    <h3>Панкейки</h3>
+    <span class="tag blue">Воскресное утро</span>
+    <p>Смешать тесто вместе, сын помешивает. Поливать мёдом самостоятельно. Выкладывать ягоды. Это уже целый ритуал выходного дня.</p>
+  </div>
+  <div class="card green">
+    <h3>Сэндвичи и брускетты</h3>
+    <span class="tag blue">Любой перекус</span>
+    <p>Намазывать масло тупым ножом, выкладывать кружки помидора, посыпать — навык самостоятельности + совместное время. Без плиты, без риска.</p>
+  </div>
+</div>
+
+<!-- SHOPPING -->
+<div id="shopping" class="content">
+
+  <style>
+    .shop-reset {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: 1.5px solid #E8C4B0;
+      color: var(--terracotta); font-family: 'Nunito', sans-serif;
+      font-size: 0.82rem; font-weight: 700; padding: 6px 14px;
+      border-radius: 20px; cursor: pointer; transition: all 0.2s;
+    }
+    .shop-reset:hover { background: #FDE8E0; }
+    .check-list { list-style: none; padding: 0; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid #F5EDE0;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-item.done { opacity: 0.4; }
+    .check-item.done .check-label { text-decoration: line-through; }
+    .check-box {
+      width: 20px; height: 20px; border-radius: 5px;
+      border: 2px solid #D4C4B0; flex-shrink: 0; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; background: white;
+    }
+    .check-item.done .check-box { background: var(--green); border-color: var(--green); }
+    .check-tick { display: none; color: white; font-size: 13px; font-weight: 900; line-height: 1; }
+    .check-item.done .check-tick { display: block; }
+    .check-label { font-size: 0.88rem; color: var(--text); }
+  </style>
+
+  <div id="shop-generated">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <div>
+        <div class="section-title" style="margin-bottom:2px;">🛒 Закупки на неделю</div>
+        <div class="section-subtitle" id="shop-gen-subtitle">Обновляется автоматически при генерации меню</div>
+      </div>
+      <button onclick="shopResetAll()" class="shop-reset">↺ Снять все галочки</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div class="progress-bar" style="width:160px;flex-shrink:0;">
+        <div class="progress-fill" id="shop-gen-bar" style="width:0%;background:var(--green);"></div>
+      </div>
+      <span style="font-size:.85rem;color:var(--text-soft);font-weight:600;" id="shop-gen-text">0 из 0</span>
+    </div>
+
+    <div id="shop-gen-lists">
+      <p style="text-align:center;padding:30px;color:var(--text-soft);">Сгенерируй меню на неделю — список закупок появится здесь автоматически</p>
+    </div>
+  </div>
+
+  <script>
+    function shopToggle(el) {
+      el.classList.toggle('done');
+      shopUpdateProgress();
+      shopSaveState();
+    }
+
+    function shopResetAll() {
+      document.querySelectorAll('#shop-gen-lists .check-item').forEach(function(el) {
+        el.classList.remove('done');
+      });
+      shopUpdateProgress();
+      shopSaveState();
+    }
+
+    function shopUpdateProgress() {
+      var all = document.querySelectorAll('#shop-gen-lists .check-item');
+      var done = document.querySelectorAll('#shop-gen-lists .check-item.done');
+      var pct = all.length ? Math.round(done.length / all.length * 100) : 0;
+      document.getElementById('shop-gen-bar').style.width = pct + '%';
+      document.getElementById('shop-gen-text').textContent = done.length + ' из ' + all.length;
+    }
+
+    function shopSaveState() {
+      var items = document.querySelectorAll('#shop-gen-lists .check-item');
+      var state = Array.from(items).map(function(el) { return el.classList.contains('done'); });
+      try { localStorage.setItem('shop:checked', JSON.stringify(state)); } catch(e) {}
+    }
+
+    function shopLoadState() {
+      try {
+        var raw = localStorage.getItem('shop:checked');
+        if (!raw) return;
+        var state = JSON.parse(raw);
+        var items = document.querySelectorAll('#shop-gen-lists .check-item');
+        items.forEach(function(el, i) { if (state[i]) el.classList.add('done'); });
+      } catch(e) {}
+      shopUpdateProgress();
+    }
+
+    window.shopRenderGenerated = function(data) {
+      var cats = data.categories || [];
+      if (!cats.length) return;
+      var html = '<div class="two-col">';
+      cats.forEach(function(cat) {
+        if (!cat.items || !cat.items.length) return;
+        html += '<div class="card" style="margin-bottom:0;">'
+          + '<h3 style="margin-bottom:10px;">' + cat.name + '</h3>'
+          + '<ul class="check-list">';
+        cat.items.forEach(function(item) {
+          html += '<li class="check-item" onclick="shopToggle(this)">'
+            + '<div class="check-box"><span class="check-tick">&#10003;</span></div>'
+            + '<div><div class="check-label">' + item + '</div></div>'
+            + '</li>';
+        });
+        html += '</ul></div>';
+      });
+      html += '</div>';
+      document.getElementById('shop-gen-lists').innerHTML = html;
+      document.getElementById('shop-gen-subtitle').textContent = 'Список из меню на эту неделю';
+      shopLoadState();
+    };
+
+    // Load saved list on init
+    (async function() {
+      try {
+        var saved = await window.storage.get('shopping:generated');
+        if (saved && saved.value) {
+          window.shopRenderGenerated(JSON.parse(saved.value));
+        }
+      } catch(e) {}
+    })();
+  </script>
+</div>
+
+
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+
+<!-- RECIPES -->
+<div id="recipes" class="content">
+<style>
+  /* ── Recipes scoped styles ── */
+  #recipes { padding: 0; }
+  .rc-header {
+    background: #2c2416; color: #faf7f2;
+    padding: 20px 24px 16px;
+    border-radius: 14px 14px 0 0;
+  }
+  .rc-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; }
+  .rc-header-sub { font-size: 0.72rem; color: #c8a96e; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .rc-controls { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+  #rc-search {
+    flex: 1; min-width: 140px; padding: 8px 14px;
+    border-radius: 8px; border: 1.5px solid #c8a96e;
+    background: #3d3020; color: #faf7f2; font-size: 0.88rem;
+    outline: none; font-family: 'Nunito', sans-serif;
+  }
+  #rc-search::placeholder { color: #a89070; }
+  .rc-btn-add {
+    padding: 8px 18px; background: #c8a96e; color: #2c2416;
+    border: none; border-radius: 8px; font-weight: 700;
+    font-size: 0.88rem; cursor: pointer; font-family: 'Nunito', sans-serif;
+    white-space: nowrap;
+  }
+  .rc-btn-add:hover { background: #d4b87a; }
+
+  .rc-body {
+    background: white; border-radius: 0 0 14px 14px;
+    border: 1.5px solid #e8e0d0; border-top: none;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(44,36,22,0.07);
+  }
+
+  .rc-cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .rc-cat {
+    padding: 5px 14px; border: 2px solid #e0d5c0;
+    background: var(--cream); color: var(--text-soft);
+    border-radius: 20px; font-size: 0.8rem; font-weight: 700;
+    cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.12s;
+  }
+  .rc-cat:hover { border-color: #c8a96e; }
+  .rc-cat.active { background: #c8a96e; border-color: #c8a96e; color: #2c2416; }
+  .rc-cat.new-cat { border-color: #b4d98a; background: #e8f5e0; color: #4a8c2a; }
+  .rc-cat.new-cat.active { background: #4a8c2a; border-color: #4a8c2a; color: white; }
+
+  .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .rc-empty { grid-column: 1/-1; text-align: center; color: var(--text-soft); padding: 40px 20px; font-size: 0.9rem; line-height: 1.8; }
+
+  .rc-card {
+    background: var(--cream); border-radius: 12px;
+    padding: 14px 16px; cursor: pointer;
+    border: 1.5px solid #e8e0d0;
+    box-shadow: 0 2px 8px rgba(44,36,22,0.05);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .rc-card:hover { box-shadow: 0 4px 16px rgba(44,36,22,0.12); border-color: #c8a96e; }
+  .rc-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .rc-badge-new {
+    display: inline-block; background: #e8f5e0; color: #4a8c2a;
+    font-size: 0.68rem; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; padding: 2px 7px;
+    border-radius: 8px; margin-bottom: 4px; border: 1.5px solid #b4d98a;
+  }
+  .rc-card h3 { font-size: 0.92rem; font-weight: 700; line-height: 1.3; color: var(--text); }
+  .rc-card-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .rc-tag { font-size: 0.72rem; padding: 2px 8px; background: #f9f4ea; color: var(--text-soft); border-radius: 10px; font-weight: 600; }
+  .rc-card-preview { margin-top: 8px; font-size: 0.75rem; color: var(--text-soft); font-style: italic; }
+
+  /* Detail view */
+  #rc-detail { display: none; }
+  .rc-detail-box { background: var(--cream); border-radius: 12px; padding: 22px; border: 1.5px solid #e8e0d0; }
+  .rc-detail-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .rc-detail-title { flex: 1; }
+  .rc-detail-title h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--text); }
+  .rc-detail-desc { margin: 0 0 16px; color: var(--text-soft); font-size: 0.88rem; font-style: italic; line-height: 1.6; }
+  .rc-detail-cols { display: grid; grid-template-columns: 1fr 1.6fr; gap: 22px; }
+  @media (max-width: 560px) { .rc-detail-cols { grid-template-columns: 1fr; } }
+  .rc-section-label { font-size: 0.72rem; font-weight: 700; color: #c8a96e; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .rc-ing-item { padding: 5px 0; border-bottom: 1px solid #f0ebe0; font-size: 0.87rem; color: var(--text); display: flex; gap: 8px; align-items: center; }
+  .rc-ing-dot { color: #c8a96e; font-size: 7px; flex-shrink: 0; }
+  .rc-step-item { display: flex; gap: 10px; margin-bottom: 10px; }
+  .rc-step-num { min-width: 22px; height: 22px; background: #2c2416; color: #faf7f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
+  .rc-step-text { font-size: 0.87rem; color: var(--text); line-height: 1.6; padding-top: 2px; }
+  .rc-detail-footer { margin-top: 20px; padding-top: 14px; border-top: 1px solid #f0ebe0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .rc-btn { padding: 7px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; transition: opacity 0.1s; }
+  .rc-btn:hover { opacity: 0.85; }
+  .rc-btn-dark { background: #2c2416; color: #faf7f2; border: none; }
+  .rc-btn-outline { background: none; border: 1.5px solid #e0d5c0; color: var(--text-soft); }
+  .rc-btn-danger { background: none; border: 1.5px solid #e8c5c5; color: #c87070; }
+  .rc-btn-confirm { background: #c87070; color: white; border: none; }
+  .rc-btn-back { background: none; border: 1.5px solid #e0d5c0; color: var(--text-soft); border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: 'Nunito', sans-serif; }
+  .rc-del-confirm { display: flex; gap: 8px; align-items: center; }
+  .rc-del-confirm span { font-size: 0.82rem; color: var(--text-soft); }
+
+  /* Modal */
+  .rc-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+  .rc-modal-overlay.open { display: flex; }
+  .rc-modal { background: var(--cream); border-radius: 14px; padding: 26px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .rc-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .rc-modal-header h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--text); }
+  .rc-modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-soft); line-height: 1; }
+  .rc-field-label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; margin-top: 12px; }
+  .rc-field { width: 100%; padding: 8px 12px; border: 1.5px solid #e0d5c0; border-radius: 8px; font-size: 0.88rem; background: white; color: var(--text); outline: none; font-family: 'Nunito', sans-serif; margin-bottom: 4px; }
+  .rc-field:focus { border-color: #c8a96e; }
+  textarea.rc-field { resize: vertical; }
+  .rc-field-row { display: flex; gap: 12px; }
+  .rc-field-row > div { flex: 1; }
+  .rc-check-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  .rc-check-row input { width: 15px; height: 15px; cursor: pointer; accent-color: #4a8c2a; }
+  .rc-check-row label { font-size: 0.82rem; color: #4a8c2a; font-weight: 700; cursor: pointer; }
+  .rc-modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+  .rc-modal-footer .rc-btn-outline { flex: 1; padding: 10px; text-align: center; }
+  .rc-modal-footer .rc-btn-dark { flex: 2; padding: 10px; font-size: 0.95rem; }
+
+  /* AI paste */
+  .rc-hint { color: var(--text-soft); font-size: 0.87rem; line-height: 1.6; margin-bottom: 12px; }
+  #rc-paste { min-height: 180px; font-size: 0.87rem; line-height: 1.6; }
+  .rc-error { color: #c87070; font-size: 0.82rem; margin-top: 8px; padding: 8px 12px; background: #fff0f0; border-radius: 8px; border: 1px solid #f0c0c0; display: none; }
+  .rc-btn-parse { flex: 2; padding: 10px; background: #2c2416; color: #faf7f2; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem; font-family: 'Nunito', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .rc-btn-parse:disabled { background: var(--text-soft); cursor: default; }
+  .rc-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #faf7f2; border-top-color: transparent; border-radius: 50%; animation: rcspin 0.8s linear infinite; }
+  @keyframes rcspin { to { transform: rotate(360deg); } }
+
+  /* Parsed preview */
+  .rc-parsed-ok { color: #4a8c2a; font-size: 0.87rem; font-weight: 700; margin-bottom: 14px; }
+  .rc-parsed-box { background: white; border: 1.5px solid #e8e0d0; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+  .rc-parsed-name { font-weight: 700; font-size: 1rem; color: var(--text); margin-bottom: 2px; }
+  .rc-parsed-sub { font-size: 0.78rem; color: var(--text-soft); margin-bottom: 10px; }
+  .rc-parsed-desc { font-size: 0.83rem; color: var(--text-soft); font-style: italic; margin-bottom: 12px; }
+  .rc-parsed-cols { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; }
+  .rc-parsed-col-label { font-size: 0.7rem; font-weight: 700; color: #c8a96e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .rc-parsed-ing { font-size: 0.82rem; color: var(--text); padding: 3px 0; border-bottom: 1px solid #f5f0e8; display: flex; gap: 6px; }
+  .rc-parsed-step { font-size: 0.82rem; color: var(--text); display: flex; gap: 8px; margin-bottom: 6px; line-height: 1.5; }
+  .rc-parsed-step-num { min-width: 18px; height: 18px; background: #2c2416; color: #faf7f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+</style>
+
+<div class="rc-header">
+  <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;">
+    <h2>📖 Книга рецептов</h2>
+    <span class="rc-header-sub">домашняя кухня</span>
+  </div>
+  <div class="rc-controls">
+    <input type="text" id="rc-search" placeholder="Поиск рецепта...">
+    <button class="rc-btn-add" onclick="rcOpenAdd()">+ Добавить рецепт</button>
+    <button onclick="rcExport()" style="padding:8px 14px;background:none;border:1.5px solid #c8a96e;color:#c8a96e;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">⬆ Экспорт</button>
+  </div>
+</div>
+<div class="rc-body">
+  <div class="rc-cats" id="rc-cats"></div>
+  <div id="rc-list">
+    <div class="rc-grid" id="rc-grid"></div>
+  </div>
+  <div id="rc-detail"></div>
+</div>
+
+<!-- Add modal -->
+<div class="rc-modal-overlay" id="rc-add-modal">
+  <div class="rc-modal">
+    <div class="rc-modal-header">
+      <h3>✨ Добавить рецепт</h3>
+      <button class="rc-modal-close" onclick="rcCloseAdd()">×</button>
+    </div>
+    <div id="rc-add-body"></div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="rc-modal-overlay" id="rc-edit-modal">
+  <div class="rc-modal">
+    <div class="rc-modal-header">
+      <h3>✏️ Редактировать</h3>
+      <button class="rc-modal-close" onclick="rcCloseEdit()">×</button>
+    </div>
+    <div id="rc-edit-body"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const CATS = ['завтраки', 'супы', 'гарниры', 'вторые блюда', 'выпечка'];
+  const ICONS = { завтраки: '☀️', супы: '🍲', гарниры: '🌾', 'вторые блюда': '🍽️', выпечка: '🥐' };
+  const KEY = 'recipes:all';
+
+  let recipes = [];
+  let activeCat = 'все';
+  let search = '';
+  let current = null;
+  let preview = null;
+  let editData = null;
+
+  // Storage
+  async function load() {
+    try { const r = await window.storage.get(KEY); if (r?.value) recipes = JSON.parse(r.value); } catch { recipes = []; }
+  }
+  async function save() {
+    try { await window.storage.set(KEY, JSON.stringify(recipes)); } catch(e) { console.error(e); }
+  }
+
+  // Filtered list
+  function filtered() {
+    return recipes.filter(r => {
+      const mc = activeCat === 'все' || (activeCat === 'новые' ? r.isNew : r.category === activeCat);
+      const ms = r.name.toLowerCase().includes(search.toLowerCase());
+      return mc && ms;
+    });
+  }
+
+  // Render categories
+  function renderCats() {
+    const all = ['все', 'новые', ...CATS];
+    document.getElementById('rc-cats').innerHTML = all.map(c => {
+      const isNew = c === 'новые';
+      const count = c === 'все' ? recipes.length : c === 'новые' ? recipes.filter(r => r.isNew).length : recipes.filter(r => r.category === c).length;
+      const cls = ['rc-cat', c === activeCat ? 'active' : '', isNew ? 'new-cat' : ''].join(' ');
+      return `<button class="${cls}" onclick="rcSetCat('${c}')">${isNew ? '✦ ' : (ICONS[c] ? ICONS[c] + ' ' : '')}${c} <span style="opacity:.6;font-size:.7rem">(${count})</span></button>`;
+    }).join('');
+  }
+
+  // Render grid
+  function renderGrid() {
+    const list = filtered();
+    if (!list.length) {
+      document.getElementById('rc-grid').innerHTML = '<div class="rc-empty">🍽️<br>Рецептов пока нет.<br>Нажми «+ Добавить рецепт», чтобы начать.</div>';
+      return;
+    }
+    document.getElementById('rc-grid').innerHTML = list.map(r => `
+      <div class="rc-card" onclick="rcOpen(${r.id})">
+        <div class="rc-card-top">
+          <div>${r.isNew ? '<span class="rc-badge-new">✦ Новое</span><br>' : ''}<h3>${r.name}</h3></div>
+          <span style="font-size:1.2rem">${ICONS[r.category] || ''}</span>
+        </div>
+        <div class="rc-card-tags">
+          ${r.time ? `<span class="rc-tag">⏱ ${r.time}</span>` : ''}
+          <span class="rc-tag">🍴 ${r.servings} пор.</span>
+          <span class="rc-tag">${r.ingredients.length} ингр.</span>
+        </div>
+        <div class="rc-card-preview">${r.description || r.ingredients.slice(0,3).join(', ') + (r.ingredients.length > 3 ? '...' : '')}</div>
+      </div>`).join('');
+  }
+
+  // Render detail
+  function renderDetail() {
+    const r = current;
+    document.getElementById('rc-detail').innerHTML = `
+      <div class="rc-detail-box">
+        <div class="rc-detail-header">
+          <button class="rc-btn-back" onclick="rcBack()">← Назад</button>
+          <span style="font-size:1.4rem">${ICONS[r.category] || ''}</span>
+          <div class="rc-detail-title">
+            ${r.isNew ? '<span class="rc-badge-new">✦ Новое</span><br>' : ''}
+            <h2>${r.name}</h2>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${r.time ? `<span class="rc-tag">⏱ ${r.time}</span>` : ''}
+            <span class="rc-tag">🍴 ${r.servings} пор.</span>
+          </div>
+        </div>
+        ${r.description ? `<p class="rc-detail-desc">${r.description}</p>` : ''}
+        <div class="rc-detail-cols">
+          <div>
+            <div class="rc-section-label">Ингредиенты</div>
+            ${r.ingredients.map(i => `<div class="rc-ing-item"><span class="rc-ing-dot">●</span>${i}</div>`).join('')}
+          </div>
+          <div>
+            <div class="rc-section-label">Приготовление</div>
+            ${r.steps.map((s, i) => `<div class="rc-step-item"><span class="rc-step-num">${i+1}</span><span class="rc-step-text">${s}</span></div>`).join('')}
+          </div>
+        </div>
+        <div class="rc-detail-footer">
+          <button class="rc-btn rc-btn-dark" onclick="rcOpenEdit(${r.id})">✏️ Редактировать</button>
+          <div id="rc-del-area"><button class="rc-btn rc-btn-danger" onclick="rcConfirmDel()">🗑 Удалить</button></div>
+        </div>
+      </div>`;
+  }
+
+  function render() {
+    renderCats();
+    if (current) {
+      document.getElementById('rc-list').style.display = 'none';
+      document.getElementById('rc-detail').style.display = 'block';
+      renderDetail();
+    } else {
+      document.getElementById('rc-list').style.display = 'block';
+      document.getElementById('rc-detail').style.display = 'none';
+      renderGrid();
+    }
+  }
+
+  // Global handlers
+  window.rcSetCat = function(c) { activeCat = c; render(); };
+  window.rcOpen = function(id) { current = recipes.find(r => r.id === id); render(); };
+  window.rcBack = function() { current = null; render(); };
+  window.rcConfirmDel = function() {
+    document.getElementById('rc-del-area').innerHTML = `
+      <div class="rc-del-confirm">
+        <span>Удалить рецепт?</span>
+        <button class="rc-btn rc-btn-confirm" onclick="rcDelete(${current.id})">Да</button>
+        <button class="rc-btn rc-btn-outline" onclick="renderDetail()">Нет</button>
+      </div>`;
+  };
+  window.rcDelete = async function(id) {
+    recipes = recipes.filter(r => r.id !== id);
+    await save(); current = null; render();
+  };
+
+  document.getElementById('rc-search').addEventListener('input', e => { search = e.target.value; render(); });
+
+  // ── ADD MODAL ──
+  window.rcOpenAdd = function() { preview = null; rcMode = 'paste'; renderAddBody(); document.getElementById('rc-add-modal').classList.add('open'); };
+  window.rcCloseAdd = function() { document.getElementById('rc-add-modal').classList.remove('open'); preview = null; rcMode = 'paste'; };
+
+  function renderAddBody() {
+    const body = document.getElementById('rc-add-body');
+    if (!preview) {
+      const isPaste = rcMode === 'paste';
+      body.innerHTML = `
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <button id="rc-tab-paste" onclick="rcSwitchMode('paste')" style="flex:1;padding:8px;border-radius:8px;border:2px solid ${isPaste ? '#c8a96e' : '#e0d5c0'};background:${isPaste ? '#c8a96e' : 'white'};color:${isPaste ? '#2c2416' : 'var(--text-soft)'};font-weight:700;font-size:.85rem;cursor:pointer;font-family:'Nunito',sans-serif">✍️ Вставить текст</button>
+          <button id="rc-tab-gen" onclick="rcSwitchMode('gen')" style="flex:1;padding:8px;border-radius:8px;border:2px solid ${!isPaste ? '#c8a96e' : '#e0d5c0'};background:${!isPaste ? '#c8a96e' : 'white'};color:${!isPaste ? '#2c2416' : 'var(--text-soft)'};font-weight:700;font-size:.85rem;cursor:pointer;font-family:'Nunito',sans-serif">✨ Сгенерировать</button>
+        </div>
+        <div id="rc-mode-paste" style="display:${isPaste ? 'block' : 'none'}">
+          <p class="rc-hint">Вставь текст рецепта в любом формате — я разберу название, ингредиенты и шаги.</p>
+          <textarea class="rc-field" id="rc-paste" placeholder="Например: Борщ. Нужно: свёкла 2 шт, капуста 300г... Готовить: сварить бульон, обжарить овощи..."></textarea>
+        </div>
+        <div id="rc-mode-gen" style="display:${!isPaste ? 'block' : 'none'}">
+          <p class="rc-hint">Напиши название блюда — я сам придумаю рецепт с ингредиентами и шагами приготовления.</p>
+          <input class="rc-field" id="rc-gen-name" placeholder="Например: Борщ, Тирамису, Куриный суп с лапшой...">
+        </div>
+        <div class="rc-error" id="rc-err"></div>
+        <div class="rc-modal-footer">
+          <button class="rc-btn rc-btn-outline" onclick="rcCloseAdd()">Отмена</button>
+          <button class="rc-btn-parse" id="rc-parse-btn" onclick="rcParse()">${isPaste ? '✨ Разобрать рецепт' : '🪄 Сгенерировать рецепт'}</button>
+        </div>`;
+    } else {
+      const r = preview;
+      body.innerHTML = `
+        <p class="rc-parsed-ok">✓ Готово! Проверь и сохрани.</p>
+        <div class="rc-parsed-box">
+          <div class="rc-parsed-name">${r.name}</div>
+          <div class="rc-parsed-sub">${r.category}${r.time ? ' · ⏱ ' + r.time : ''}${r.servings ? ' · 🍴 ' + r.servings + ' пор.' : ''}</div>
+          ${r.description ? `<div class="rc-parsed-desc">${r.description}</div>` : ''}
+          <div class="rc-parsed-cols">
+            <div>
+              <div class="rc-parsed-col-label">Ингредиенты</div>
+              ${r.ingredients.map(i => `<div class="rc-parsed-ing"><span class="rc-ing-dot" style="font-size:7px;color:#c8a96e;padding-top:4px;flex-shrink:0">●</span>${i}</div>`).join('')}
+            </div>
+            <div>
+              <div class="rc-parsed-col-label">Приготовление</div>
+              ${r.steps.map((s, i) => `<div class="rc-parsed-step"><span class="rc-parsed-step-num">${i+1}</span><span>${s}</span></div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="rc-modal-footer">
+          <button class="rc-btn rc-btn-outline" onclick="preview=null;renderAddBody()">← Назад</button>
+          <button class="rc-btn rc-btn-dark" style="flex:2;padding:10px" onclick="rcSaveNew()">Сохранить рецепт ✓</button>
+        </div>`;
+    }
+  }
+
+  let rcMode = 'paste';
+  window.rcSwitchMode = function(mode) {
+    rcMode = mode;
+    renderAddBody();
+  };
+
+  window.rcParse = async function() {
+    const btn = document.getElementById('rc-parse-btn');
+    const err = document.getElementById('rc-err');
+    err.style.display = 'none';
+
+    let prompt;
+    if (rcMode === 'gen') {
+      const name = document.getElementById('rc-gen-name').value.trim();
+      if (!name) return;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="rc-spinner"></span> Генерирую...';
+      prompt = `Придумай рецепт блюда "${name}" для домашней готовки. Верни ТОЛЬКО валидный JSON без markdown и пояснений.
+Категории (выбери одну): "завтраки", "супы", "гарниры", "вторые блюда", "выпечка"
+Формат:
+{"name":"...","category":"...","description":"одно предложение","time":"напр. 40 мин","servings":4,"ingredients":["ингредиент с количеством"],"steps":["подробный шаг"]}
+Сделай рецепт простым и реалистичным для домашней кухни, с точными количествами ингредиентов.`;
+    } else {
+      const text = document.getElementById('rc-paste').value.trim();
+      if (!text) return;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="rc-spinner"></span> Разбираю...';
+      prompt = `Разбери этот рецепт и верни ТОЛЬКО валидный JSON без markdown и пояснений.
+Категории (выбери одну): "завтраки", "супы", "гарниры", "вторые блюда", "выпечка"
+Формат:
+{"name":"...","category":"...","description":"одно предложение или пустая строка","time":"напр. 40 мин или пустая строка","servings":4,"ingredients":["..."],"steps":["..."]}
+
+Рецепт:
+${text}`;
+    }
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] })
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      const raw = (data.content || []).map(b => b.text || '').join('');
+      const parsed = JSON.parse(raw.replace(/[`]{3}json|[`]{3}/g, '').trim());
+      if (!parsed.name || !parsed.ingredients || !parsed.steps) throw new Error('Неполный ответ');
+      preview = { ...parsed, isNew: true };
+      renderAddBody();
+    } catch(e) {
+      err.textContent = '⚠️ ' + (e.message || 'Ошибка');
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = rcMode === 'gen' ? '🪄 Сгенерировать рецепт' : '✨ Разобрать рецепт';
+    }
+  };
+
+  window.rcSaveNew = async function() {
+    recipes.push({ ...preview, id: Date.now() });
+    await save(); rcCloseAdd(); render();
+  };
+
+  // ── EDIT MODAL ──
+  window.rcOpenEdit = function(id) {
+    const r = recipes.find(r => r.id === id);
+    editData = { ...r, ingredients: [...r.ingredients], steps: [...r.steps] };
+    renderEditBody();
+    document.getElementById('rc-edit-modal').classList.add('open');
+  };
+  window.rcCloseEdit = function() { document.getElementById('rc-edit-modal').classList.remove('open'); editData = null; };
+
+  function rEsc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function renderEditBody() {
+    document.getElementById('rc-edit-body').innerHTML = `
+      <label class="rc-field-label">Название *</label>
+      <input class="rc-field" id="rce-name" value="${rEsc(editData.name)}">
+      <label class="rc-field-label">Категория</label>
+      <select class="rc-field" id="rce-cat">${CATS.map(c => `<option ${c===editData.category?'selected':''}>${c}</option>`).join('')}</select>
+      <label class="rc-field-label">Описание</label>
+      <input class="rc-field" id="rce-desc" value="${rEsc(editData.description||'')}" placeholder="Краткое описание...">
+      <div class="rc-field-row">
+        <div><label class="rc-field-label">Время</label><input class="rc-field" id="rce-time" value="${rEsc(editData.time||'')}" placeholder="напр. 30 мин"></div>
+        <div><label class="rc-field-label">Порций</label><input class="rc-field" type="number" id="rce-serv" value="${editData.servings||2}" min="1"></div>
+      </div>
+      <div class="rc-check-row">
+        <input type="checkbox" id="rce-new" ${editData.isNew?'checked':''}>
+        <label for="rce-new">✦ Пометить как «Новое»</label>
+      </div>
+      <label class="rc-field-label" style="margin-top:14px">Ингредиенты</label>
+      <div id="rce-ings">${editData.ingredients.map((v,i) => rIngRow(v,i)).join('')}</div>
+      <button class="rc-btn rc-btn-outline" style="margin-top:6px;font-size:.8rem;padding:5px 12px" onclick="rcAddIng()">+ ингредиент</button>
+      <label class="rc-field-label" style="margin-top:14px">Шаги приготовления</label>
+      <div id="rce-steps">${editData.steps.map((v,i) => rStepRow(v,i)).join('')}</div>
+      <button class="rc-btn rc-btn-outline" style="margin-top:6px;font-size:.8rem;padding:5px 12px" onclick="rcAddStep()">+ шаг</button>
+      <div class="rc-modal-footer">
+        <button class="rc-btn rc-btn-outline" onclick="rcCloseEdit()">Отмена</button>
+        <button class="rc-btn rc-btn-dark" onclick="rcSaveEdit()">Сохранить</button>
+      </div>`;
+  }
+
+  function rIngRow(v, i) {
+    return `<div style="display:flex;gap:6px;margin-bottom:5px">
+      <input class="rc-field" style="margin:0;flex:1" value="${rEsc(v)}" oninput="editData.ingredients[${i}]=this.value" placeholder="Ингредиент ${i+1}">
+      <button style="background:none;border:1.5px solid #e0d5c0;border-radius:6px;padding:0 10px;cursor:pointer;color:#c87070;font-size:15px" onclick="rcRemIng(${i})">×</button>
+    </div>`;
+  }
+  function rStepRow(v, i) {
+    return `<div style="display:flex;gap:6px;margin-bottom:5px;align-items:flex-start">
+      <span style="color:#c8a96e;font-weight:700;padding-top:9px;min-width:18px;font-size:.85rem">${i+1}.</span>
+      <textarea class="rc-field" style="margin:0;flex:1" rows="2" oninput="editData.steps[${i}]=this.value" placeholder="Шаг ${i+1}...">${rEsc(v)}</textarea>
+      <button style="background:none;border:1.5px solid #e0d5c0;border-radius:6px;padding:0 10px;cursor:pointer;color:#c87070;font-size:15px;align-self:stretch" onclick="rcRemStep(${i})">×</button>
+    </div>`;
+  }
+
+  window.rcAddIng = function() { editData.ingredients.push(''); document.getElementById('rce-ings').insertAdjacentHTML('beforeend', rIngRow('', editData.ingredients.length-1)); };
+  window.rcAddStep = function() { editData.steps.push(''); document.getElementById('rce-steps').insertAdjacentHTML('beforeend', rStepRow('', editData.steps.length-1)); };
+  window.rcRemIng = function(i) { editData.ingredients.splice(i,1); renderEditBody(); };
+  window.rcRemStep = function(i) { editData.steps.splice(i,1); renderEditBody(); };
+
+  window.rcSaveEdit = async function() {
+    const name = document.getElementById('rce-name').value.trim();
+    if (!name) return;
+    const updated = {
+      ...editData,
+      name,
+      category: document.getElementById('rce-cat').value,
+      description: document.getElementById('rce-desc').value.trim(),
+      time: document.getElementById('rce-time').value.trim(),
+      servings: Number(document.getElementById('rce-serv').value) || 2,
+      isNew: document.getElementById('rce-new').checked,
+      ingredients: editData.ingredients.filter(Boolean),
+      steps: editData.steps.filter(Boolean),
+    };
+    recipes = recipes.map(r => r.id === updated.id ? updated : r);
+    await save();
+    current = updated;
+    rcCloseEdit();
+    render();
+  };
+
+  // ── EXPORT / IMPORT ──
+  window.rcExport = function() {
+    if (!recipes.length) {
+      alert('Нет рецептов для экспорта.');
+      return;
+    }
+    var json = JSON.stringify(recipes, null, 2);
+    navigator.clipboard.writeText(json).then(function() {
+      alert('✓ ' + recipes.length + ' рецептов скопированы в буфер обмена.\n\nТеперь открой это приложение в другом аккаунте, нажми «⬇ Импорт» и вставь.');
+    }).catch(function() {
+      // Fallback: show in textarea
+      var ta = document.createElement('textarea');
+      ta.value = json;
+      ta.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:80vw;height:60vh;z-index:9999;font-size:12px;padding:12px;border-radius:8px;border:2px solid #c8a96e;';
+      document.body.appendChild(ta);
+      ta.select();
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;';
+      overlay.onclick = function() { document.body.removeChild(ta); document.body.removeChild(overlay); };
+      document.body.appendChild(overlay);
+      alert('Выдели весь текст (Ctrl+A) и скопируй (Ctrl+C), затем закрой окно кликом на фон.');
+    });
+  };
+
+  window.rcImport = function() {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;';
+    overlay.innerHTML = '<div style="background:#faf7f2;border-radius:14px;padding:24px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.3);">'
+      + '<div style="font-family:\'Playfair Display\',serif;font-size:1.1rem;color:#2c2416;margin-bottom:8px;">⬇ Импорт рецептов</div>'
+      + '<p style="font-size:.85rem;color:#6B5B45;margin-bottom:12px;">Вставь JSON из экспорта. Существующие рецепты будут дополнены новыми (дубли пропущены).</p>'
+      + '<textarea id="rc-import-ta" style="width:100%;height:180px;padding:10px;border:1.5px solid #e0d5c0;border-radius:8px;font-size:.82rem;font-family:\'Nunito\',sans-serif;resize:vertical;" placeholder="Вставь JSON сюда..."></textarea>'
+      + '<div id="rc-import-err" style="color:#c87070;font-size:.82rem;margin-top:6px;display:none;"></div>'
+      + '<div style="display:flex;gap:10px;margin-top:14px;">'
+      + '<button onclick="this.closest(\'div\').parentNode.parentNode.remove()" style="flex:1;padding:9px;background:none;border:1.5px solid #e0d5c0;border-radius:8px;font-family:\'Nunito\',sans-serif;font-weight:700;cursor:pointer;color:#6B5B45;">Отмена</button>'
+      + '<button onclick="rcDoImport(this)" style="flex:2;padding:9px;background:#2c2416;color:#faf7f2;border:none;border-radius:8px;font-family:\'Nunito\',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;">Импортировать</button>'
+      + '</div></div>';
+    document.body.appendChild(overlay);
+  };
+
+  window.rcDoImport = async function(btn) {
+    var ta = document.getElementById('rc-import-ta');
+    var err = document.getElementById('rc-import-err');
+    err.style.display = 'none';
+    try {
+      var imported = JSON.parse(ta.value.trim());
+      if (!Array.isArray(imported)) throw new Error('Неверный формат — ожидается массив рецептов.');
+      var existingIds = new Set(recipes.map(function(r) { return r.name.toLowerCase(); }));
+      var added = 0;
+      imported.forEach(function(r) {
+        if (!r.name || !r.ingredients || !r.steps) return;
+        if (existingIds.has(r.name.toLowerCase())) return;
+        r.id = Date.now() + Math.random();
+        recipes.push(r);
+        existingIds.add(r.name.toLowerCase());
+        added++;
+      });
+      await save();
+      btn.closest('div').parentNode.parentNode.remove();
+      render();
+      alert('✓ Импортировано рецептов: ' + added + (imported.length - added > 0 ? '\nПропущено дублей: ' + (imported.length - added) : ''));
+    } catch(e) {
+      err.textContent = '⚠️ ' + e.message;
+      err.style.display = 'block';
+    }
+  };
+
+  // Init
+  (async () => { await load(); render(); })();
+})();
+</script>
+</div>
+</body>
+</html>
