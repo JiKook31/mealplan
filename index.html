@@ -71,12 +71,14 @@
     display: flex;
     gap: 0;
     overflow-x: auto;
+    overflow-y: hidden;
     background: var(--warm);
     border-bottom: 2px solid #E8DDD0;
     padding: 0 24px;
     position: sticky;
     top: 0;
     z-index: 10;
+    white-space: nowrap;
   }
 
   .tab {
@@ -1402,7 +1404,7 @@ weekLoadAndRender();
         </div>
         <div id="rc-mode-photo" style="display:${rcMode==='photo'?'block':'none'}">
           <p class="rc-hint">Сфотографируй рецепт или сделай скриншот из Instagram, любого сайта или книги — AI разберёт его автоматически.</p>
-          <input type="file" id="rc-photo" accept="image/*" capture="environment" style="width:100%;padding:10px;border:1.5px dashed #c8a96e;border-radius:8px;background:#fffdf9;font-family:'Nunito',sans-serif;font-size:.85rem;cursor:pointer;">
+          <input type="file" id="rc-photo" accept="image/*" style="width:100%;padding:10px;border:1.5px dashed #c8a96e;border-radius:8px;background:#fffdf9;font-family:'Nunito',sans-serif;font-size:.85rem;cursor:pointer;">
         </div>
         <div id="rc-mode-paste" style="display:${rcMode==='paste'?'block':'none'}">
           <p class="rc-hint">Вставь текст рецепта в любом формате — я разберу название, ингредиенты и шаги.</p>
