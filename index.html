@@ -1219,7 +1219,7 @@ weekLoadAndRender();
   </div>
   <div class="rc-controls">
     <input type="text" id="rc-search" placeholder="Поиск рецепта...">
-    <button class="rc-btn-add" onclick="rcOpenAdd()">+ Добавить рецепт</button>
+    <button class="rc-btn-add" onclick="rcOpenAdd()">+ Добавить</button>
     <div style="position:relative;display:inline-block;">
       <button id="rc-more-btn" onclick="rcToggleMore()" style="padding:8px 12px;background:none;border:1.5px solid #e0d5c0;color:#6B5B45;border-radius:8px;font-size:1.1rem;cursor:pointer;line-height:1;">•••</button>
       <div id="rc-more-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:white;border:1.5px solid #e0d5c0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;min-width:140px;overflow:hidden;">
@@ -1241,7 +1241,7 @@ weekLoadAndRender();
 <div class="rc-modal-overlay" id="rc-add-modal">
   <div class="rc-modal">
     <div class="rc-modal-header">
-      <h3>✨ Добавить рецепт</h3>
+      <h3>✨ Добавить </h3>
       <button class="rc-modal-close" onclick="rcCloseAdd()">×</button>
     </div>
     <div id="rc-add-body"></div>
@@ -1304,7 +1304,7 @@ weekLoadAndRender();
   function renderGrid() {
     const list = filtered();
     if (!list.length) {
-      document.getElementById('rc-grid').innerHTML = '<div class="rc-empty">🍽️<br>Рецептов пока нет.<br>Нажми «+ Добавить рецепт», чтобы начать.</div>';
+      document.getElementById('rc-grid').innerHTML = '<div class="rc-empty">🍽️<br>Рецептов пока нет.<br>Нажми «+ Добавить», чтобы начать.</div>';
       return;
     }
     document.getElementById('rc-grid').innerHTML = list.map(r => `
