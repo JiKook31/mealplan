@@ -653,7 +653,7 @@ async function weekGenerate() {
         ...anthropicHeaders()
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2500,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -1241,7 +1241,7 @@ weekLoadAndRender();
 <div class="rc-modal-overlay" id="rc-add-modal">
   <div class="rc-modal">
     <div class="rc-modal-header">
-      <h3>✨ Добавить </h3>
+      <h3>✨ Добавить</h3>
       <button class="rc-modal-close" onclick="rcCloseAdd()">×</button>
     </div>
     <div id="rc-add-body"></div>
