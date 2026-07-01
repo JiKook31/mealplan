@@ -322,7 +322,21 @@
 <header>
   <h1>🍽️ Наш семейный рацион</h1>
   <p>Вкусно, быстро и без лишних усилий — план для вашей семьи</p>
+  <button onclick="openApiKeyModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:6px 12px;font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;" id="api-key-btn">⚙️ API ключ</button>
 </header>
+
+<!-- API Key Modal -->
+<div id="api-key-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:16px;padding:28px;max-width:440px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+    <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:8px;">⚙️ API ключ Anthropic</h3>
+    <p style="font-size:.85rem;color:#6B5B45;margin-bottom:16px;">Нужен для работы AI-функций (генерация меню, разбор рецептов). Хранится только в браузере.<br><br>Получить: <a href="https://console.anthropic.com" target="_blank" style="color:#C4714A;">console.anthropic.com</a></p>
+    <input id="api-key-input" type="password" placeholder="sk-ant-..." style="width:100%;padding:10px 14px;border:1.5px solid #e0d5c0;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.9rem;margin-bottom:16px;outline:none;">
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeApiKeyModal()" style="padding:8px 18px;border:1.5px solid #e0d5c0;background:white;border-radius:8px;font-family:'Nunito',sans-serif;font-weight:700;cursor:pointer;">Отмена</button>
+      <button onclick="saveApiKey()" style="padding:8px 18px;background:#C4714A;color:white;border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-weight:700;cursor:pointer;">Сохранить</button>
+    </div>
+  </div>
+</div>
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('overview')">📋 Обзор</div>
@@ -449,6 +463,42 @@ window.storage = {
   }
 };
 
+// ── API KEY ──
+function getApiKey() {
+  return localStorage.getItem('anthropic:api_key') || '';
+}
+function openApiKeyModal() {
+  document.getElementById('api-key-input').value = getApiKey();
+  var m = document.getElementById('api-key-modal');
+  m.style.display = 'flex';
+}
+function closeApiKeyModal() {
+  document.getElementById('api-key-modal').style.display = 'none';
+}
+function saveApiKey() {
+  var key = document.getElementById('api-key-input').value.trim();
+  if (key) localStorage.setItem('anthropic:api_key', key);
+  closeApiKeyModal();
+  updateApiKeyBtn();
+}
+function updateApiKeyBtn() {
+  var btn = document.getElementById('api-key-btn');
+  if (btn) btn.textContent = getApiKey() ? '✅ API ключ' : '⚙️ API ключ';
+}
+function anthropicHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true',
+    'x-api-key': getApiKey()
+  };
+}
+function checkApiKey() {
+  if (!getApiKey()) { openApiKeyModal(); return false; }
+  return true;
+}
+document.addEventListener('DOMContentLoaded', updateApiKeyBtn);
+
 var WEEK_KEY = 'week:menu';
 var RECIPES_KEY = 'recipes:all';
 
@@ -531,6 +581,7 @@ async function weekLoadAndRender() {
 }
 
 async function weekGenerate() {
+  if (!checkApiKey()) return;
   var btn = document.getElementById('week-gen-btn');
   btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:wgspin .8s linear infinite;vertical-align:middle;margin-right:6px"></span> Составляю...';
   btn.disabled = true;
@@ -597,9 +648,7 @@ async function weekGenerate() {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        ...anthropicHeaders()
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
@@ -657,9 +706,7 @@ async function weekGenerateShopping(menu) {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        ...anthropicHeaders()
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
@@ -1172,6 +1219,7 @@ weekLoadAndRender();
     <input type="text" id="rc-search" placeholder="Поиск рецепта...">
     <button class="rc-btn-add" onclick="rcOpenAdd()">+ Добавить рецепт</button>
     <button onclick="rcExport()" style="padding:8px 14px;background:none;border:1.5px solid #c8a96e;color:#c8a96e;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">⬆ Экспорт</button>
+    <button onclick="rcImport()" style="padding:8px 14px;background:none;border:1.5px solid #c8a96e;color:#c8a96e;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">⬇ Импорт</button>
   </div>
 </div>
 <div class="rc-body">
@@ -1335,30 +1383,39 @@ weekLoadAndRender();
   document.getElementById('rc-search').addEventListener('input', e => { search = e.target.value; render(); });
 
   // ── ADD MODAL ──
-  window.rcOpenAdd = function() { preview = null; rcMode = 'paste'; renderAddBody(); document.getElementById('rc-add-modal').classList.add('open'); };
-  window.rcCloseAdd = function() { document.getElementById('rc-add-modal').classList.remove('open'); preview = null; rcMode = 'paste'; };
+  window.rcOpenAdd = function() { preview = null; rcMode = 'photo'; renderAddBody(); document.getElementById('rc-add-modal').classList.add('open'); };
+  window.rcCloseAdd = function() { document.getElementById('rc-add-modal').classList.remove('open'); preview = null; rcMode = 'photo'; };
+
+  function tabBtn(mode, label) {
+    const active = rcMode === mode;
+    return `<button onclick="rcSwitchMode('${mode}')" style="flex:1;padding:8px;border-radius:8px;border:2px solid ${active ? '#c8a96e' : '#e0d5c0'};background:${active ? '#c8a96e' : 'white'};color:${active ? '#2c2416' : 'var(--text-soft)'};font-weight:700;font-size:.82rem;cursor:pointer;font-family:'Nunito',sans-serif">${label}</button>`;
+  }
 
   function renderAddBody() {
     const body = document.getElementById('rc-add-body');
     if (!preview) {
-      const isPaste = rcMode === 'paste';
       body.innerHTML = `
-        <div style="display:flex;gap:8px;margin-bottom:14px;">
-          <button id="rc-tab-paste" onclick="rcSwitchMode('paste')" style="flex:1;padding:8px;border-radius:8px;border:2px solid ${isPaste ? '#c8a96e' : '#e0d5c0'};background:${isPaste ? '#c8a96e' : 'white'};color:${isPaste ? '#2c2416' : 'var(--text-soft)'};font-weight:700;font-size:.85rem;cursor:pointer;font-family:'Nunito',sans-serif">✍️ Вставить текст</button>
-          <button id="rc-tab-gen" onclick="rcSwitchMode('gen')" style="flex:1;padding:8px;border-radius:8px;border:2px solid ${!isPaste ? '#c8a96e' : '#e0d5c0'};background:${!isPaste ? '#c8a96e' : 'white'};color:${!isPaste ? '#2c2416' : 'var(--text-soft)'};font-weight:700;font-size:.85rem;cursor:pointer;font-family:'Nunito',sans-serif">✨ Сгенерировать</button>
+        <div style="display:flex;gap:6px;margin-bottom:14px;">
+          ${tabBtn('photo','📷 По фото')}
+          ${tabBtn('paste','✍️ Вставить текст')}
+          ${tabBtn('gen','✨ Сгенерировать')}
         </div>
-        <div id="rc-mode-paste" style="display:${isPaste ? 'block' : 'none'}">
+        <div id="rc-mode-photo" style="display:${rcMode==='photo'?'block':'none'}">
+          <p class="rc-hint">Сфотографируй рецепт или сделай скриншот из Instagram, любого сайта или книги — AI разберёт его автоматически.</p>
+          <input type="file" id="rc-photo" accept="image/*" capture="environment" style="width:100%;padding:10px;border:1.5px dashed #c8a96e;border-radius:8px;background:#fffdf9;font-family:'Nunito',sans-serif;font-size:.85rem;cursor:pointer;">
+        </div>
+        <div id="rc-mode-paste" style="display:${rcMode==='paste'?'block':'none'}">
           <p class="rc-hint">Вставь текст рецепта в любом формате — я разберу название, ингредиенты и шаги.</p>
           <textarea class="rc-field" id="rc-paste" placeholder="Например: Борщ. Нужно: свёкла 2 шт, капуста 300г... Готовить: сварить бульон, обжарить овощи..."></textarea>
         </div>
-        <div id="rc-mode-gen" style="display:${!isPaste ? 'block' : 'none'}">
+        <div id="rc-mode-gen" style="display:${rcMode==='gen'?'block':'none'}">
           <p class="rc-hint">Напиши название блюда — я сам придумаю рецепт с ингредиентами и шагами приготовления.</p>
           <input class="rc-field" id="rc-gen-name" placeholder="Например: Борщ, Тирамису, Куриный суп с лапшой...">
         </div>
         <div class="rc-error" id="rc-err"></div>
         <div class="rc-modal-footer">
           <button class="rc-btn rc-btn-outline" onclick="rcCloseAdd()">Отмена</button>
-          <button class="rc-btn-parse" id="rc-parse-btn" onclick="rcParse()">${isPaste ? '✨ Разобрать рецепт' : '🪄 Сгенерировать рецепт'}</button>
+          <button class="rc-btn-parse" id="rc-parse-btn" onclick="rcParse()">${rcMode==='gen'?'🪄 Сгенерировать':rcMode==='photo'?'📷 Разобрать фото':'✨ Разобрать рецепт'}</button>
         </div>`;
     } else {
       const r = preview;
@@ -1386,52 +1443,79 @@ weekLoadAndRender();
     }
   }
 
-  let rcMode = 'paste';
-  window.rcSwitchMode = function(mode) {
-    rcMode = mode;
-    renderAddBody();
-  };
+  let rcMode = 'url';
+  window.rcSwitchMode = function(mode) { rcMode = mode; renderAddBody(); };
 
   window.rcParse = async function() {
+    if (!checkApiKey()) return;
     const btn = document.getElementById('rc-parse-btn');
     const err = document.getElementById('rc-err');
     err.style.display = 'none';
 
-    let prompt;
+    let messages;
     if (rcMode === 'gen') {
       const name = document.getElementById('rc-gen-name').value.trim();
       if (!name) return;
       btn.disabled = true;
       btn.innerHTML = '<span class="rc-spinner"></span> Генерирую...';
-      prompt = `Придумай рецепт блюда "${name}" для домашней готовки. Верни ТОЛЬКО валидный JSON без markdown и пояснений.
+      const prompt = `Придумай рецепт блюда "${name}" для домашней готовки. Верни ТОЛЬКО валидный JSON без markdown и пояснений.
 Категории (выбери одну): "завтраки", "супы", "гарниры", "вторые блюда", "выпечка"
 Формат:
 {"name":"...","category":"...","description":"одно предложение","time":"напр. 40 мин","servings":4,"ingredients":["ингредиент с количеством"],"steps":["подробный шаг"]}
 Сделай рецепт простым и реалистичным для домашней кухни, с точными количествами ингредиентов.`;
+      messages = [{ role: 'user', content: prompt }];
+    } else if (rcMode === 'photo') {
+      const file = document.getElementById('rc-photo').files[0];
+      if (!file) return;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="rc-spinner"></span> Читаю фото...';
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = () => rej(new Error('Не удалось прочитать файл'));
+        r.readAsDataURL(file);
+      });
+      messages = [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
+        { type: 'text', text: `Это фото рецепта. Извлеки из него рецепт и верни ТОЛЬКО валидный JSON без markdown и пояснений.
+Категории (выбери одну): "завтраки", "супы", "гарниры", "вторые блюда", "выпечка"
+Формат:
+{"name":"...","category":"...","description":"одно предложение или пустая строка","time":"напр. 40 мин или пустая строка","servings":4,"ingredients":["..."],"steps":["..."]}` }
+      ]}];
     } else {
       const text = document.getElementById('rc-paste').value.trim();
       if (!text) return;
       btn.disabled = true;
       btn.innerHTML = '<span class="rc-spinner"></span> Разбираю...';
-      prompt = `Разбери этот рецепт и верни ТОЛЬКО валидный JSON без markdown и пояснений.
+      const prompt = `Разбери этот рецепт и верни ТОЛЬКО валидный JSON без markdown и пояснений.
 Категории (выбери одну): "завтраки", "супы", "гарниры", "вторые блюда", "выпечка"
 Формат:
 {"name":"...","category":"...","description":"одно предложение или пустая строка","time":"напр. 40 мин или пустая строка","servings":4,"ingredients":["..."],"steps":["..."]}
 
 Рецепт:
 ${text}`;
+      messages = [{ role: 'user', content: prompt }];
     }
 
     try {
+      const body = { 
+        model: 'claude-sonnet-4-6', 
+        max_tokens: 1500, 
+        messages
+      };
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] })
+        headers: anthropicHeaders(),
+        body: JSON.stringify(body)
       });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const data = await resp.json();
       const raw = (data.content || []).map(b => b.text || '').join('');
-      const parsed = JSON.parse(raw.replace(/[`]{3}json|[`]{3}/g, '').trim());
+      const cleaned = raw.replace(/```json|```/g, '').trim();
+      const jsonStart = cleaned.indexOf('{');
+      const jsonEnd = cleaned.lastIndexOf('}');
+      if (jsonStart === -1) throw new Error('Не удалось разобрать рецепт');
+      const parsed = JSON.parse(cleaned.substring(jsonStart, jsonEnd + 1));
       if (!parsed.name || !parsed.ingredients || !parsed.steps) throw new Error('Неполный ответ');
       preview = { ...parsed, isNew: true };
       renderAddBody();
@@ -1439,7 +1523,7 @@ ${text}`;
       err.textContent = '⚠️ ' + (e.message || 'Ошибка');
       err.style.display = 'block';
       btn.disabled = false;
-      btn.innerHTML = rcMode === 'gen' ? '🪄 Сгенерировать рецепт' : '✨ Разобрать рецепт';
+      btn.innerHTML = rcMode === 'gen' ? '🪄 Сгенерировать рецепт' : rcMode === 'photo' ? '📷 Разобрать фото' : '✨ Разобрать рецепт';
     }
   };
 
