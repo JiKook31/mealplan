@@ -1220,8 +1220,13 @@ weekLoadAndRender();
   <div class="rc-controls">
     <input type="text" id="rc-search" placeholder="Поиск рецепта...">
     <button class="rc-btn-add" onclick="rcOpenAdd()">+ Добавить рецепт</button>
-    <button onclick="rcExport()" style="padding:8px 14px;background:none;border:1.5px solid #c8a96e;color:#c8a96e;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">⬆ Экспорт</button>
-    <button onclick="rcImport()" style="padding:8px 14px;background:none;border:1.5px solid #c8a96e;color:#c8a96e;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">⬇ Импорт</button>
+    <div style="position:relative;display:inline-block;">
+      <button id="rc-more-btn" onclick="rcToggleMore()" style="padding:8px 12px;background:none;border:1.5px solid #e0d5c0;color:#6B5B45;border-radius:8px;font-size:1.1rem;cursor:pointer;line-height:1;">•••</button>
+      <div id="rc-more-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:white;border:1.5px solid #e0d5c0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;min-width:140px;overflow:hidden;">
+        <button onclick="rcExport();rcToggleMore()" style="display:block;width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:#2c2416;cursor:pointer;">⬆ Экспорт</button>
+        <button onclick="rcImport();rcToggleMore()" style="display:block;width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:#2c2416;cursor:pointer;border-top:1px solid #f0ebe3;">⬇ Импорт</button>
+      </div>
+    </div>
   </div>
 </div>
 <div class="rc-body">
@@ -1612,6 +1617,17 @@ ${text}`;
     rcCloseEdit();
     render();
   };
+
+  // ── MORE MENU ──
+  window.rcToggleMore = function() {
+    const menu = document.getElementById('rc-more-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  };
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('rc-more-btn').contains(e.target)) {
+      document.getElementById('rc-more-menu').style.display = 'none';
+    }
+  });
 
   // ── EXPORT / IMPORT ──
   window.rcExport = function() {
